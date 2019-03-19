@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_5.0.xsd">
+  
+  <chart name="chart.unpaid.invoices.per.customer" title="Unpaid invoices per Customer" onInit="action.set.default.date">
+  	<search-fields>
+  		<field name="fromDate" title="From Date" type="datetime"/>
+  		<field name="toDate" title="To Date" type="datetime"/>
+  	</search-fields>
+  	
+  	<dataset type="jpql">
+  		<![CDATA[
+  		SELECT
+  			COUNT(self.id) as total,
+  			party.name as name
+  		FROM
+  			Invoice self
+  		JOIN
+  			Party party ON (party.id = self.party)
+  		WHERE
+  			party.customer = 'TRUE' AND self.status = 'validated'
+  		AND
+  			self.invoiceDate >= :fromDate AND self.invoiceDate <= :toDate
+  		GROUP BY
+  			party.name	
+  		
+  		]]>
+  	</dataset>
+  	<category key="name"/>
+	<series key="total" type="bar"/>  
+  </chart>
+  
+  	<action-attrs name="action.set.default.date">
+  		<attribute name="value" for="toDate" expr="eval: __datetime__"/>
+  		<attribute name="value" for="fromDate" expr="eval: __datetime__.withDayOfMonth(1)"/>
+  	</action-attrs>
+  
+  <chart name="chart.paid.invoices.per.category.per.product" title="Paid Invoices Per Category Per Product" onInit="action.set.default.date">
+  
+  	<search-fields>
+  		<field name="fromDate" title="From Date" type="datetime"/>
+  		<field name="toDate" title="To Date" type="datetime"/>
+  	</search-fields>
+  	<dataset type="jpql">
+  		<![CDATA[
+  		SELECT 
+  			COUNT(self.id) as total,
+  			p.name as productname,
+  			pc.name as categories
+  			
+  		FROM
+  			Invoice self
+  		JOIN
+  			InvoiceLine invoiceLine ON (self.id = invoiceLine.invoice)
+  		JOIN
+  			Product p ON (invoiceLine.product = p.id)
+  		JOIN
+  			ProductCategory pc ON (p.id = pc.id)
+  		WHERE
+  			self.status = 'paid'
+  		AND
+  			self.invoiceDate >= :fromDate AND self.invoiceDate <= :toDate
+  		GROUP BY
+  			p.name,
+  			pc.name
+  		
+  		]]>
+  	</dataset>
+  	<category key="categories"/>
+  	<series key="total" groupBy="productname" type="bar"/>
+  </chart>
+  
+  	<chart name="chart.customer.per.state" title="Customer per State">
+  		<dataset type="sql">
+  		<![CDATA[
+  	 	SELECT
+  			 COUNT(self.id) as total,
+  			 gst_state.name as states
+  	
+  	 	FROM
+  	 		gst_party as self
+  	 	
+  		 LEFT JOIN
+  			gst_party_address as partyaddress ON (self.id = partyaddress.gst_party)
+  	
+  		 LEFT JOIN
+  	 		gst_address as address ON (partyaddress.address = address.id)
+  	 
+  		 LEFT JOIN
+  		 	gst_state ON (address.state = gst_state.id)
+  		 
+  		 WHERE
+  		 	self.customer = 't'
+  		 
+  		 GROUP BY
+  		 	gst_state.name
+  		]]>
+  		</dataset>
+  		<category key="states"/>
+  		<series key="total" type="pie"/>
+  	</chart> 
+ 
+ 	<chart name="chart.invoice.per.status" title="Invoice per Status:Amount">
+ 		<dataset type="jpql">
+ 			<![CDATA[
+ 			SELECT
+ 				SUM(self.grossAmount) as total,
+ 				self.status as status
+ 			FROM
+ 				Invoice self
+ 				
+ 			GROUP BY
+ 				self.status
+ 				
+ 			]]>
+ 		</dataset>
+ 		<category key="status"/>
+ 		<series key="total" type="bar"/>
+ 	</chart>
+ 	
+ 	<chart name="chart.invoice.per.status.line" title="Invoice per Status(No. of Invoices)">
+ 		<dataset type="jpql">
+ 		SELECT
+ 			COUNT(self.id) as total,
+ 			self.status as status
+ 		FROM
+ 			Invoice self
+ 			
+ 		GROUP BY
+ 			self.status
+ 			
+ 		</dataset>
+ 		<category key="status"/>
+ 		<series key="total" type="line"/>
+ 	</chart>
+  </object-views>

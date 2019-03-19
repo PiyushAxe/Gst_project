@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_5.0.xsd">
+	
+	
+	<selection name="invoice.status.selection">
+		<option value="draft">Draft</option>
+		<option value="validated">Validated</option>
+		<option value="paid">Paid</option>
+		<option value="cancelled">Cancelled</option>
+	</selection>
+	 
+	
+	<grid model="com.axelor.gst.db.Invoice" title="Invoice List" name="invoice-grid">
+		<field name="status" readonly="true"/>
+		<field name="company"/>
+		<field name="reference"/>
+		<field name="invoiceDate"/>
+		<field name="priority"/>
+		<field name="party"/>
+		<field name="netAmount" title="Net Amount"/>
+		<field name="netIGST" title="Net IGST"/>
+		<field name="netSGST" title="Net SGST"/>
+		<field name="grossAmount" title="Gross Amount"/>	
+	</grid>
+	
+	<form model="com.axelor.gst.db.Invoice" title="Invoice" name="invoice-form" onNew="action.set.default.values" 
+		onLoad = "action-default-button-title" width = "large">
+		<toolbar>
+			<button name="btnPrint" title="Print" icon="fa-print" onClick="action-report-invoice"/>
+		</toolbar>
+		
+		<panel title="Invoice Information" >
+			<field name="status" widget="nav-select" readonly="true" colSpan="8"/>
+			<button name="btnChangeStatus" title="Validate" colSpan="2" onClick="action.change.invoice.status,action-set-reference,save" hideIf="status =='cancelled' || status == 'paid' || !company || !party "/>
+			<button name="btnCancelInvoice" title="Cancel Invoice" colSpan = "2" onClick ="action.invoice.cancel,save" hideIf="status == 'cancelled' || status =='paid' "/>
+		</panel>
+		<panel>
+			<field name="company" required="true"/>
+			<field name="reference"/>
+			<field name="invoiceDate" widget="date-time"/>
+			<field name="priority"/>
+			<field name="party" onChange = "action.set.party.contact" required="true"/>
+			<field name="partyContact"/>
+			<field name="invoiceAddress" onChange="com.axelor.gst.web.InvoiceController:onChangeAddress,com.axelor.gst.web.InvoiceController:calculateTotal"/>
+			<field name="shippingAddress" />
+			<field name="useInvoiceAsShippingAddress" widget="boolean-switch" colSpan="8" onChange="com.axelor.gst.web.InvoiceController:setShippingAddress"/>
+			<field name="netAmount" readonly="true"/>
+			<field name="netIGST" readonly="true"/>
+			<field name="netCGST" readonly="true"/>
+			<field name="netSGST" readonly="true"/>
+			<field name="grossAmount" readonly="true"/>
+		</panel>
+		<panel-related field="invoiceItems" colSpan="12" onChange="com.axelor.gst.web.InvoiceController:calculateTotal">
+			<field name="product"/>
+			<field name="hsbn" title="HSBN"/>
+			<field name="item" required="true"/>
+			<field name="qty"/>
+			<field name="price"/>
+			<field name="netAmount" readonly="true"/>
+			<field name="gstRate" title="GST Rate" readonly="true"/>
+			<field name="igst" title="IGST" readonly="true"/>
+			<field name="sgst" title="SGST" readonly="true"/>
+			<field name="cgst" title="CGST" readonly="true"/>
+			<field name="grossAmount" readonly="true"/>
+		</panel-related>
+	</form>
+	
+	
+	<kanban name="invoice-kanban" sequenceBy="priority" 
+		model="com.axelor.gst.db.Invoice" 
+		columnBy="status" title="Invoices">
+			<field name="status"/>
+			<field name="company" required="true"/>
+			<field name="reference"/>
+			<field name="invoiceDate" widget="date-time"/>
+			<field name="priority"/>
+			<field name="partyContact"/>
+			<field name="invoiceAddress"/>
+			<field name="shippingAddress"/>
+			<field name="netAmount" readonly="true"/>
+			<field name="netIGST" readonly="true"/>
+			<field name="netCGST" readonly="true"/>
+			<field name="netSGST" readonly="true"/>
+			<field name="grossAmount" readonly="true"/>
+			<template>
+				<![CDATA[
+					
+					Status:		<h4>{{record.status}}</h4>
+					Reference:	<h4>{{record.reference}}</h4>
+   					Party Name:	<h4>{{record.partyContact.name}}</h4>
+   					
+   					Net Amount:	<h4>{{record.netAmount}}</h4>
+   					IGST:		<h4>{{record.netIGST}}</h4>
+   					CGST:		<h4>{{record.netCGST}}</h4>
+   					SGST:		<h4>{{record.netSGST}}</h4>
+					
+					Gross Amount:	<h4>{{record.grossAmount}}</h4>	
+				
+				]]>
+			</template>
+	</kanban>
+	
+		<action-method name="action.change.invoice.status">
+			<call class="com.axelor.gst.web.InvoiceController" method="changeStatus"/>
+		</action-method>
+	
+		<action-group name="action.set.default.values">
+			<action name="default.invoice.date.time"/>
+			<action name="action.set.selected.products"/>
+		</action-group>
+	
+	
+		<action-method name="action.set.selected.products">
+			<call class="com.axelor.gst.web.InvoiceController" method="setSelectedProducts"/>		
+		</action-method>		
+		
+		<action-method name="action-set-reference">
+			<call class="com.axelor.gst.web.InvoiceController" method="setReference"/>
+		</action-method>
+		
+		<action-method name="action-default-button-title">
+			<call class="com.axelor.gst.web.InvoiceController" method="defaultButtonTitle"/>
+		</action-method>
+	
+		<action-record name="default.invoice.date.time" model="com.axelor.gst.db.Invoice">
+			<field name="invoiceDate" expr="eval:__datetime__"/>
+			<field name="status" expr="eval:'draft'"/>
+		</action-record>
+		
+		<action-attrs name="action.invoice.validate">
+			<attribute name="value" for="status" expr="eval:'validated'"/>
+		</action-attrs>
+		
+		<action-attrs name="action.invoice.paid">
+			<attribute name="value" for="status" expr="eval:'paid'"/>
+		</action-attrs>
+		
+		<action-attrs name="action.invoice.cancel">
+			<attribute name="value" for="status" expr="eval:'cancelled'"/>
+		</action-attrs>
+		
+		<action-report name="action-report-invoice"
+			output="invoice-${date}${time}"  
+			design="gst.rptdesign"
+			format="pdf">
+		<param name="InvoiceId" expr="eval: id"/>
+		<!--  <param name="imagePath" expr="call: com.axelor.gst.web.InvoiceController:addAttachmentPath()"/>-->
+		</action-report>
+		
+		<action-script name="action.set.party.contact" model="com.axelor.gst.db.Invoice">
+					<script language="groovy">
+						<![CDATA[
+						
+							Invoice invoice = $request.getContext().asType(Invoice.class);
+							
+							Party party = invoice.getParty();
+							
+							List<Contact> listContact = party.getContact();
+							List<Address> listAddress = party.getAddress();
+							
+							for(Contact contact: listContact){
+								if(contact.getType().equals("primary")){
+									$response.setValue("partyContact",contact);
+									break;
+								}
+							}
+							
+							for(Address address: listAddress){
+								if(address.getType().equals("default")||address.getType().equals("invoice")){
+									$response.setValue("invoiceAddress",address);
+										
+									}	
+							
+								}
+							
+							for(Address address: listAddress){
+								if(address.getType().equals("default") || address.getType().equals("shipping")){
+								 	$response.setValue("shippingAddress",address);
+								
+								}
+							
+							}
+										
+							
+				]]>
+					
+				</script>
+		</action-script>
+	</object-views>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_5.0.xsd">
+	
+	<grid model="com.axelor.gst.db.Product" title="Product list" name="product-grid">
+	<toolbar>
+	 	<button name="btnPrint" title="Print" showTitle="false" icon="fa-print" onClick="action-multiple-product,action.print.product.report.all"/>
+		<button name="btnCreateInvoice" title="Create Invoice" onClick="action.invoice.create"/>
+	</toolbar>
+		<field name="name" required="true"/>
+		<field name="code" required="true"/>
+		<field name="hsbn" title="HSBN"/>
+		<field name="category"/>
+		<field name="salePrice" title="Sale Price"/>
+		<field name="costPrice" title="Cost Price"/>
+		<field name="image"/>
+		<field name="gstRate" title="GST Rate"/>
+	</grid>
+ 
+	<cards name="product-cards" model="com.axelor.gst.db.Product" title="Product" orderBy="name">
+		<field name="name"/>
+		<field name="code"/>
+		<field name="hsbn" title="HSBN"/>
+		<field name="category"/>
+		<field name="salePrice" title="Sale Price"/>
+		<field name="costPrice" title="Cost Price"/>
+		<field name="hasimage"/>
+		<field name="gstRate" title="GST Rate"/>
+		<template>
+			<![CDATA[
+				<div>
+					<product>
+						<strong>{{record.name}} {{[record.code]}}</strong><br>
+						HSBN:			{{record.hsbn}}<br>
+						Category:		{{record.category.name}}<br>
+						Sale Price:		{{record.salePrice}}<br>
+						Cost Price:		{{record.costPrice}}<br>
+						GST Rate:		{{record.gstRate}}
+					</product>
+				</div>
+			]]>
+		</template>
+	</cards>
+	
+	<form model="com.axelor.gst.db.Product" title="Product" name="product-form" width = "large">  
+		<toolbar>
+			<button name="btnPrintReport" title="Print" icon="fa-print" onClick="action.print.product.report"/>
+		</toolbar>
+		<panel title="Overview">
+			<field name="image" widget = "Image" colSpan = "4" title="Image"/>
+			<field name="name" required="true" colSpan = "4"/>
+			<field name="code" required="true" colSpan = "4"/>
+			<field name="hsbn" title="HSBN" colSpan = "4"/>
+			<field name="category" required="true" onChange="com.axelor.gst.web.ProductController:getGSTRate" colSpan = "4"/>
+			<field name="salePrice" title="Sale Price" colSpan = "4"/>
+			<field name="costPrice" title="Cost Price" colSpan = "4"/>
+			<field name="gstRate" title="GST Rate" />
+		</panel>
+	</form>
+	
+	<action-view name="action.invoice.create" title="Invoice" model="com.axelor.gst.db.Invoice">
+		<view type="form" name="invoice-form"/>
+		<context name="_ids" expr="eval: _ids"/>
+	</action-view>
+	
+	
+	
+	<action-report output="Product" 
+		name="action.print.product.report" 
+		design="product1.rptdesign"
+		format="pdf">
+		<param name="productId" expr="eval: id"/>
+	</action-report>
+	
+	<action-method name="action-multiple-product">
+	<call class="com.axelor.gst.web.ProductController" method="selectedProductPrint"/>
+	</action-method>
+	
+	<action-report name="action.print.product.report.all" design="multiProduct.rptdesign"
+		output="PO-${date}${time}" format="pdf">
+		<param name="productIds" expr="eval: productIds" />
+		<param name="path" expr="eval: com.axelor.app.AppSettings.get().getPath('file.upload.dir', '')" />
+	</action-report>
+	
+	
+	
+</object-views>  
+

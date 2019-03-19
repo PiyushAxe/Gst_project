@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_5.0.xsd">
+
+
+	<grid model="com.axelor.gst.db.Company" title="Company List" name="company-grid">
+		<field name="name" required="true"/>
+		<field name="gstin" title="GSTIN"/>
+	</grid>
+			
+	<form model="com.axelor.gst.db.Company" title="Company" name="company-form" width = "large" >
+		<panel title="Overview" colSpan="12">
+			<field name="logo" widget = "image"/>
+			<field name="name" required="true"/>
+			<field name="gstin" title="GSTIN" max="15" min="15"/>
+			<field name="address" colSpan="12">
+				<viewer><![CDATA[
+					<address>
+					{{record.type}}<br>
+					{{record.line1}} {{record.line2}}<br>
+					{{record.city.name}},{{record.state.name}}-{{record.pinCode}}<br>
+					{{record.country.name}}
+					</address>
+				]]></viewer>
+				<editor x-show-titles="false">
+					<field name="type"/>
+					<field name="line1"/>
+					<field name="line2"/>
+					<field name="city"/>
+					<field name="state"/>
+					<field name="country"/>
+					<field name="pinCode"/>
+				</editor>
+			</field>
+		</panel>
+		
+		<panel-related field="contact">
+			<field name="type"/>
+			<field name="name"/>  				
+  			<field name="primaryEmail"/>
+  			<field name="secondaryEmail"/>
+  			<field name="primaryPhone"/>
+			<field name="secondaryPhone"/>
+		</panel-related>
+		
+		<panel-related field="bankDetails">
+			<field name="bank"/>
+			<field name="accountNo" />
+			<field name="ifsc"/>
+			<field name="type"/>
+			<field name="address"/>
+		</panel-related>
+		
+	</form>
+ </object-views>

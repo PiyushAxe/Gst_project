@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_5.0.xsd">
+	
+	<selection name="party.type.selection">
+		<option value="Individual">Individual</option>
+		<option value="Company">Company</option>
+	</selection>
+	
+  <grid model="com.axelor.gst.db.Party" title="Party List" name="party-grid">
+  	<field name="reference" readonly="true"/>
+  	<field name="name" required="true"/>
+  	<field name="type" required="true"/>
+  	<field name="customer"/>
+  	<field name="gstIn" title="GSTIN"/>
+	<field name="supplier"/>
+	
+  </grid>
+  
+  <form model="com.axelor.gst.db.Party" title="Party" name="party-form" onSave="action.party.reference" width = "large">
+  	<panel title="Overview">
+  		<field name="reference" readonly="true"/>
+  		<field name="name" required="true"/>
+  		<field name="type" required="true"/>
+  		<field name="customer"/>
+		<field name="gstIn" title="GSTIN"/>
+		<field name="supplier"/>
+  	</panel>
+  	
+  	<panel-related field="contact">
+  		<field name="name"/>
+  		<field name="type"/>
+  		<field name="primaryEmail"/>
+  		<field name="secondaryEmail"/>
+  		<field name="primaryPhone"/>
+  		<field name="secondaryPhone"/>
+	</panel-related>
+	
+	<panel-related field="address">
+		<field name="type"/>
+		<field name="line1"/>
+		<field name="line2"/>
+		<field name="city"/>
+		<field name="state"/>
+		<field name="country"/>
+		<field name="pinCode"/>
+	</panel-related>
+  </form>
+  
+  <action-method name="action.party.reference">
+  	<call class="com.axelor.gst.web.PartyController" method="getPartyReference"/>
+  </action-method>
+  
+ </object-views>

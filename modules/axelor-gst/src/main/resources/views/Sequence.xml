@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<object-views xmlns="http://axelor.com/xml/ns/object-views"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_5.0.xsd">
+	
+	<grid model="com.axelor.gst.db.Sequence" title="Sequence" name="sequence-grid">
+		<field name="prefix" required="true"/>
+		<field name="suffix"/>
+		<field name="padding" min="1" max="10"/>
+		<field name="nextNumber"/>
+		<field name="model"/>
+		<field name="model" required="true"/>
+	</grid>
+	
+	<form model="com.axelor.gst.db.Sequence" title="Sequence" name="sequence-form" onNew="action.default.padding" width = "large">
+		<panel title="Overview">
+			<field name="prefix" required="true" onChange="com.axelor.gst.web.SequenceController:generateSequence"/>
+			<field name="suffix" onChange="com.axelor.gst.web.SequenceController:generateSequence"/>
+			<field name="padding" onChange="com.axelor.gst.web.SequenceController:generateSequence"/>
+			<field name="nextNumber"/>
+			<field name="model" required="true"/>
+		</panel>
+	</form>
+	
+	<action-attrs name="action.default.padding">
+		<attribute name="value" for="padding" expr="1"/>
+	</action-attrs>
+	
+	</object-views>
